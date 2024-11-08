@@ -30,7 +30,9 @@ class User extends Authenticatable implements JWTSubject
         'cittadinanza',
         'sesso',
         'codFiscale',
-        'dataNascita'
+        'dataNascita',
+        'secretJWT',
+        'salt'
     ];
 
     /**
@@ -52,6 +54,8 @@ class User extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
+        'secretJWT',
+        'salt'
     ];
 
     /**

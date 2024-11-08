@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Routing\Controller;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -16,15 +17,18 @@ class AuthController extends Controller
      * 
      * @return void
      */
-    public function __construct() {
-        $this->middleware('auth:api', ['except' => ['login', 'register']]);
-    }
+    // public function __construct() {
+    //     $this->middleware('auth:api', ['except' => ['login', 'register']]);
+    // }
 
     /**
      * GEt JWT via given credentials
      * 
      * @return Illuminate\Http\JsonResponse
      */
+
+    #################   PASSAGGIO DEI PARAMETRI IN CHIARO QUINDI RISCHIO DI ATTACO MITM( man in the middle ) #############################
+    
     public function login(Request $request) {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
@@ -60,7 +64,10 @@ class AuthController extends Controller
         }
         $user = User::create(array_merge(
             $validatore->validated(),
-            ['password'=>bcrypt($request->password)]
+            ['password' => hash('sha512', ($request->password))],
+            ['user' => hash('sha512', ($request->user))],
+            ['salt' => hash('sha512', trim(Str::random(200)))],
+            ['secretJWT' => hash('sha512', trim(Str::random(256)))],
         ));
         $id = $user->idUser;
         $portafoglio = Crediti::create(["credito"=>0, "idUser"=>$id]);

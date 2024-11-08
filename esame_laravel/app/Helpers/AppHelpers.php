@@ -12,9 +12,9 @@ use Firebase\JWT\Key;
 
 class AppHelpers{
 
-    public static function isAdmin($idContattoRuolo)
+    public static function isAdmin($idRuolo)
     {
-        return ($idContattoRuolo === 2) ? true : false;
+        return ($idRuolo === 2) ? true : false;
     }
 
     public static function AggiornaRegoleHelper($rules)
@@ -54,33 +54,6 @@ class AppHelpers{
         return AesCtr::decrypt($testoCifrato, $chiave, 256);    
     }
         
-    
-
-
-    /**
-     * Funzione per estrarre il i nomi dei campi della tabella
-     * 
-     * @param string $password
-     * @param string $salt
-     * @param string $sfida
-     * 
-     * @return array
-     */
-    public static function DB_Column($table)
-    {
-
-    }
-
-    /**
-     * 
-     */
-    public static function  creaPasswordCifrata($password, $salt, $sfida)
-    {
-        $hashSaltPsw = AppHelpers::nascondiPassword($password, $salt);
-        $hashFinale = AppHelpers::cifra($hashSaltPsw, $sfida);
-
-        return $hashFinale;
-    }
 
 
     /**
@@ -114,7 +87,7 @@ class AppHelpers{
         $t = time();
         $nbf = ($usaDa == null) ? $t:$usaDa;
         $exp = ($scadenza == null) ? $nbf + $maxTime : $scadenza;
-        $idRuolo = $recordContatto->idContattoRuolo;
+        $idRuolo = $recordContatto->idRuolo;
         $arr = array(
             'iss'=>'',
             'aud'=>null,
@@ -123,9 +96,9 @@ class AppHelpers{
             'exp'=>$exp,
             'data'=>array(
                 'idUser'=>$idUser,
-                'idContattoStato'=>$recordContatto->idContattoStato,
-                'idContattoRuolo'=>$idRuolo,
-                'nome'=>trim($recordContatto->name . " " . $recordContatto->email)
+                'status'=>$recordContatto->status,
+                'idRuolo'=>$idRuolo,
+                'nome_completo'=>trim($recordContatto->name . " " . $recordContatto->cognome)
             )
             );
             $token = JWT::encode($arr, $secretJWT,'HS256');
@@ -158,8 +131,7 @@ class AppHelpers{
      */
     public static function validaToken($token, $jwt, $sessione){
         $rit = null;
-        $key = ['key'=>$jwt];
-        $payload = JWT::decode($token,new Key($jwt, 'HS256'));
+        $payload = JWT::decode($token,new Key($jwt, 'HS256')); // Per fare il decode devl creare una nuova istanza key e passargli la secretJWT e l'algoritmo
         if($payload->iat <=$sessione->inizioSessione) {
             if($payload->data->idUser == $sessione->idUser) {
                 $rit = $payload;
